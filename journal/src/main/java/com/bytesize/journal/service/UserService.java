@@ -2,12 +2,13 @@ package com.bytesize.journal.service;
 
 import com.bytesize.journal.entity.User;
 import com.bytesize.journal.repository.UserRepo;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class UserService {
@@ -15,22 +16,23 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
-    public List<User> getAllUsers(){
-        return userRepo.findAll();
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    public User findByUserName(String userName)
-    {
+    public User findByUserName(String userName) {
         return userRepo.findByUserName(userName);
     }
 
-    public void deleteUser(String userName){
-        userRepo.delete(findByUserName(userName));
+    public void deleteUser(User user) {
+        userRepo.delete(user);
     }
 
-    public void saveUser(User user)
-    {
-         userRepo.save(user);
+    public void saveUser(User user) {
+        userRepo.save(user);
     }
-
+    public void newUser(User user) {
+        user.setRoles(List.of("USER"));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepo.save(user);
+    }
 }
