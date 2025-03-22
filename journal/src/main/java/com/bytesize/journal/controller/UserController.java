@@ -2,16 +2,13 @@ package com.bytesize.journal.controller;
 
 import com.bytesize.journal.entity.User;
 import com.bytesize.journal.service.UserService;
-import org.bson.types.ObjectId;
+import com.bytesize.journal.serviceImpl.UserAuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -20,40 +17,44 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers()
-    {
-        List<User> allUsers = userService.getAllUsers();
-        if(allUsers!=null && !allUsers.isEmpty())
-        {
-            return new ResponseEntity<>(allUsers, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    @Autowired
+    private UserAuthServiceImpl userAuthService;
 
     @PostMapping
-    public ResponseEntity<?> saveUser(@RequestBody User user)
+    public ResponseEntity<?> createNewUser(@RequestBody User user)
     {
         try {
-            userService.saveUser(user);
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            userService.newUser(user);
+            return new ResponseEntity<>(userAuthService.getUserName(), HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(user, HttpStatus.NOT_IMPLEMENTED);
         }
     }
 
-    @PutMapping("/{username}")
-    public ResponseEntity<?> updateUser( @RequestBody User newUser, @PathVariable String userName)
+    @PutMapping
+    public ResponseEntity<?> updateUser( @RequestBody User newUser)
     {
-        User userInDb = userService.findByUserName(userName);
+        User userInDb = userService.findByUserName(userAuthService.getUserName());
         if(userInDb!=null)
         {
             userInDb.setUserName(newUser.getUserName());
             userInDb.setPassword(newUser.getPassword());
-            userService.saveUser(userInDb);
-            return new ResponseEntity<>(HttpStatus.OK);
+            userService.newUser(userInDb);
+            return new ResponseEntity<>("User updated", HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser()
+    {
+        User userInDb = userService.findByUserName(userAuthService.getUserName());
+        if(userInDb!=null)
+        {
+            userService.deleteUser(userInDb);
+            return new ResponseEntity<>("User Deleted", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
     }
 
 }
