@@ -9,12 +9,9 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/journal")
@@ -58,13 +55,13 @@ public class journalEntryController {
     }
 
     @DeleteMapping("id/{id}")
-    public ResponseEntity<?> deleteJournalEntryById(@PathVariable ObjectId id) {
+    public ResponseEntity<HttpStatus> deleteJournalEntryById(@PathVariable ObjectId id) {
         boolean removed = journalEntryService.deleteById(id);
         if(removed){
-            return new ResponseEntity<>("Removed Successfully", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         else{
-            return new ResponseEntity<>("No Entry found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -78,6 +75,6 @@ public class journalEntryController {
             journalEntryService.saveJournalEntry(old);
             return new ResponseEntity<>(old, HttpStatus.OK);
         }
-        return new ResponseEntity<>("No Journal found to update", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(webEntry,HttpStatus.NOT_FOUND);
     }
 }
