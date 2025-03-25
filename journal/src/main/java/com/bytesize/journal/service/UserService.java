@@ -35,4 +35,15 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepo.save(user);
     }
+
+    public List<User> getAllUsers(){
+        return userRepo.findAll();
+    }
+
+    public void saveAdmin(User user){
+        user.setRoles(List.of("ADMIN"));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepo.save(user);
+    }
+
 }
